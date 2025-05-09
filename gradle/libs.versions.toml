@@ -1,0 +1,5 @@
+[versions]
+minio = "8.5.17"
+
+[libraries]
+minio = { module = "io.minio:minio", version.ref = "minio" }
