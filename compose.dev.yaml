@@ -3,7 +3,7 @@ version: '3.8'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
-    container_name: elasticsearch
+    container_name: meliora-elasticsearch
     env_file:
       - .env.dev
     ports:
@@ -17,7 +17,7 @@ services:
 
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: meliora-postgres
     env_file:
       - .env.dev
     ports:
@@ -30,7 +30,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: meliora-redis
     ports:
       - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
@@ -42,12 +42,12 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: minio
+    container_name: meliora-minio
     env_file:
       - .env.dev
     ports:
-      - "9000:9000"  # API port
-      - "9001:9001"  # Console port
+      - "9000:9000"
+      - "9001:9001"
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -57,18 +57,18 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
+    container_name: meliora-zookeeper
     env_file:
       - .env.dev
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_CLIENT_PORT}:${ZOOKEEPER_CLIENT_PORT}"
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka
+    container_name: meliora-kafka
     depends_on:
       - zookeeper
     env_file:
       - .env.dev
     ports:
-      - "9092:9092"
+      - "${KAFKA_LOCALHOST_PORT}:${KAFKA_LOCALHOST_PORT}"
