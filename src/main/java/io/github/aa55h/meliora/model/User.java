@@ -43,8 +43,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private int tokenVersion = 1;
 
-    @OneToOne(optional = false, orphanRemoval = true)
-    private Playlist playlist;
+    @OneToOne(orphanRemoval = true)
+    private Playlist favorites;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     private Set<Playlist> playlists = new LinkedHashSet<>();

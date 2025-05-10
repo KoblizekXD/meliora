@@ -24,7 +24,7 @@ public class Playlist {
     @Column(nullable = false)
     private String description;
     
-    @Column(nullable = false)
+    @Column
     private String coverImageUrl;
 
     @ManyToOne(optional = false)

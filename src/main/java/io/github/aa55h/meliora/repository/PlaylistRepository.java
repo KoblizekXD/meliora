@@ -1,0 +1,9 @@
+package io.github.aa55h.meliora.repository;
+
+import io.github.aa55h.meliora.model.Playlist;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface PlaylistRepository extends JpaRepository<Playlist, UUID> {
+}
