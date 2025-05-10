@@ -1,8 +1,9 @@
 package io.github.aa55h.meliora.service;
 
-import io.github.aa55h.meliora.dto.AuthResponse;
+import io.github.aa55h.meliora.dto.AuthExchangeCredentials;
 import io.github.aa55h.meliora.model.User;
 import io.github.aa55h.meliora.repository.UserRepository;
+import io.github.aa55h.meliora.util.AuthenticationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,8 +51,8 @@ public class UserService implements UserDetailsService<User> {
      * @param user The user to authenticate
      * @return An AuthResponse containing the access and refresh tokens
      */
-    public AuthResponse authenticate(@NotNull User user) {
-        return new AuthResponse(
+    public AuthExchangeCredentials authenticate(@NotNull User user) {
+        return new AuthExchangeCredentials(
                 jwtService.generateAccessToken(user),
                 jwtService.generateRefreshToken(user)
         );
@@ -61,5 +62,20 @@ public class UserService implements UserDetailsService<User> {
         return userRepository.findByEmail(email)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
+    }
+    
+    public void logout(String accessToken, String refreshToken) {
+        jwtService.blacklistToken(accessToken);
+        jwtService.blacklistToken(refreshToken);
+    }
+    
+    public AuthExchangeCredentials refresh(String refreshToken) {
+        if (!jwtService.isRefreshTokenValid(refreshToken, null)) {
+            throw new AuthenticationException("Invalid refresh token");
+        }
+        String email = jwtService.extractEmail(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+        return authenticate(user);
     }
 }
