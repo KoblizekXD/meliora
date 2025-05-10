@@ -55,6 +55,7 @@ public class JwtService {
                 .subject(userDetails.getEmail())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
+                .claim("tokenVersion", userDetails.getTokenVersion())
                 .signWith(getSignInKey())
                 .compact();
     }
@@ -65,9 +66,9 @@ public class JwtService {
                 && !isTokenExpired(token)
                 && !isTokenBlacklisted(token);
     }
-
-    public boolean isRefreshTokenValid(String refreshToken, User userDetails) {
-        return isTokenValid(refreshToken, userDetails);
+    
+    public int extractTokenVersion(String token) {
+        return extractClaim(token, claims -> claims.get("tokenVersion", Integer.class));
     }
 
     public String extractEmail(String token) {

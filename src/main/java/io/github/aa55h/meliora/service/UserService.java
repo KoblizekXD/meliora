@@ -70,12 +70,13 @@ public class UserService implements UserDetailsService<User> {
     }
     
     public AuthExchangeCredentials refresh(String refreshToken) {
-        if (!jwtService.isRefreshTokenValid(refreshToken, null)) {
-            throw new AuthenticationException("Invalid refresh token");
-        }
+        int version = jwtService.extractTokenVersion(refreshToken);
         String email = jwtService.extractEmail(refreshToken);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
+        if (user.getTokenVersion() != version) {
+            throw new AuthenticationException("Invalid refresh token");
+        }
         return authenticate(user);
     }
 }

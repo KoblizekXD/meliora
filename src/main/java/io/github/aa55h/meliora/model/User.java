@@ -38,6 +38,9 @@ public class User implements UserDetails {
     
     @Column
     private String profilePictureUrl;
+    
+    @Column(nullable = false)
+    private int tokenVersion = 1;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
