@@ -4,6 +4,7 @@ import io.github.aa55h.meliora.util.FileServiceException;
 import io.github.aa55h.meliora.util.MelioraBucket;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
+import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -95,12 +96,51 @@ public class FileStorageService {
     }
 
     /**
+     * Ensures that a bucket is deleted if it exists.
+     * @param bucket the bucket to delete
+     * @return true if the bucket was deleted, false if it did not exist
+     */
+    public boolean ensureDeleteBucket(MelioraBucket bucket) {
+        try {
+            if (minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(bucket.toString())
+                    .build())) {
+                deleteBucketContents(bucket);
+                minioClient.removeBucket(RemoveBucketArgs.builder()
+                        .bucket(bucket.toString())
+                        .build());
+                return true;
+            }
+        } catch (Exception e) {
+            throw new FileServiceException(e);
+        }
+        return false;
+    }
+    
+    public void deleteBucketContents(MelioraBucket bucket) {
+        try {
+            Iterable<Result<Item>> objects = minioClient.listObjects(ListObjectsArgs.builder()
+                    .bucket(bucket.toString())
+                    .build());
+            for (Result<Item> item : objects) {
+                minioClient.removeObject(RemoveObjectArgs.builder()
+                        .bucket(bucket.toString())
+                        .object(item.get().objectName())
+                        .build());
+            }
+        } catch (Exception e) {
+            throw new FileServiceException(e);
+        }
+    }
+
+    /**
      * Deletes a bucket.
      * @throws FileServiceException if an error occurs during the operation
      * @param bucket the bucket to delete
      */
     public void deleteBucket(MelioraBucket bucket) {
         try {
+            deleteBucketContents(bucket);
             minioClient.removeBucket(RemoveBucketArgs.builder()
                     .bucket(bucket.toString())
                     .build());
@@ -135,6 +175,10 @@ public class FileStorageService {
             return minioClient.bucketExists(BucketExistsArgs.builder()
                     .bucket(bucket.toString())
                     .build());
+        } catch (ErrorResponseException e) {
+            if (e.errorResponse().code().equals("NoSuchBucket"))
+                return false;
+            else throw new FileServiceException(e);
         } catch (Exception e) {
             throw new FileServiceException(e);
         }

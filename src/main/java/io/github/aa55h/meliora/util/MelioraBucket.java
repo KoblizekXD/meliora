@@ -6,7 +6,7 @@ import java.util.Locale;
  * Enum representing the bucket names used in the Meliora backend.
  */
 public enum MelioraBucket {
-    ;
+    TEST_BUCKET;
 
     @Override
     public String toString() {

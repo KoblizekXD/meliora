@@ -14,10 +14,17 @@ public class MinioConfiguration {
     @Value("${MINIO_ROOT_PASSWORD}")
     private String minioPassword;
     
+    @Value("${MINIO_URL}")
+    private String minioUrl;
+    
     @Bean
     public MinioClient minioClient() {
+        String url = minioUrl;
+        if (url == null || url.isEmpty()) {
+            minioUrl = "localhost";
+        }
         return MinioClient.builder()
-                .endpoint("localhost")
+                .endpoint(minioUrl)
                 .credentials(minioUsername, minioPassword)
                 .build();
     }
