@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,6 +42,12 @@ public class User implements UserDetails {
     
     @Column(nullable = false)
     private int tokenVersion = 1;
+
+    @OneToOne(optional = false, orphanRemoval = true)
+    private Playlist playlist;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private Set<Playlist> playlists = new LinkedHashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
