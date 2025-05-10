@@ -1,12 +1,12 @@
 package io.github.aa55h.meliora.service;
 
+import io.github.aa55h.meliora.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -37,40 +37,40 @@ public class JwtService {
         this.redisTemplate = redisTemplate;
     }
 
-    public String generateAccessToken(UserDetails userDetails) {
+    public String generateAccessToken(User userDetails) {
         return buildToken(new HashMap<>(), userDetails, jwtExpiration);
     }
 
-    public String generateRefreshToken(UserDetails userDetails) {
+    public String generateRefreshToken(User userDetails) {
         return buildToken(new HashMap<>(), userDetails, refreshExpiration);
     }
 
     private String buildToken(
             Map<String, Object> extraClaims,
-            UserDetails userDetails,
+            User userDetails,
             long expiration
     ) {
         return Jwts.builder()
                 .claims(extraClaims)
-                .subject(userDetails.getUsername())
+                .subject(userDetails.getEmail())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey())
                 .compact();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()))
+    public boolean isTokenValid(String token, User userDetails) {
+        final String email = extractEmail(token);
+        return (email.equals(userDetails.getEmail()))
                 && !isTokenExpired(token)
                 && !isTokenBlacklisted(token);
     }
 
-    public boolean isRefreshTokenValid(String refreshToken, UserDetails userDetails) {
+    public boolean isRefreshTokenValid(String refreshToken, User userDetails) {
         return isTokenValid(refreshToken, userDetails);
     }
 
-    public String extractUsername(String token) {
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
