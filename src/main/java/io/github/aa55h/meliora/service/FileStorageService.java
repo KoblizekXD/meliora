@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 
+/**
+ * A generic file storage service which uses MinIO as the underlying storage system.
+ */
 @Service
 public class FileStorageService {
     private final MinioClient minioClient;

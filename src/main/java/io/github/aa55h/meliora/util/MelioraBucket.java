@@ -6,6 +6,9 @@ import java.util.Locale;
  * Enum representing the bucket names used in the Meliora backend.
  */
 public enum MelioraBucket {
+    RAW_MUSIC,
+    MUSIC_METADATA,
+    MUSIC_SEGMENTS,
     TEST_BUCKET;
 
     @Override
