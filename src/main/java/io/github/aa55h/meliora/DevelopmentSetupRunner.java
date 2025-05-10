@@ -28,6 +28,6 @@ public class DevelopmentSetupRunner implements CommandLineRunner {
         log.warn("Detected development environment. Setting up test data in databases.");
         User user = userService.createDefaultUser("admin", "admin@example.com", "Password1");
         assert user != null : "Failed to create test user";
-        log.info("\nDevelopment user account({}) with credentials:\nEmail: admin@example.com\nPassword: Password1\n", user.getId());
+        log.info("\n\nDevelopment user account({}) with credentials:\nEmail: admin@example.com\nPassword: Password1\n\n", user.getId());
     }
 }

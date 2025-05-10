@@ -14,7 +14,7 @@ public class MinioConfiguration {
     @Value("${meliora.minio.password}")
     private String minioPassword;
     
-    @Value("${meliora.minio.url}")
+    @Value("${meliora.minio.url:null}")
     private String minioUrl;
     
     @Bean

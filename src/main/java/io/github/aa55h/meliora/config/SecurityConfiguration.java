@@ -1,6 +1,7 @@
 package io.github.aa55h.meliora.config;
 
 import io.github.aa55h.meliora.filter.JwtSecurityFilter;
+import io.github.aa55h.meliora.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,10 +20,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration {
-    private final UserDetailsService userService;
+    private final UserService userService;
     private final JwtSecurityFilter jwtFilter;
 
-    public SecurityConfiguration(JwtSecurityFilter jwtFilter, UserDetailsService userService) {
+    public SecurityConfiguration(JwtSecurityFilter jwtFilter, UserService userService) {
         this.userService = userService;
         this.jwtFilter = jwtFilter;
     }

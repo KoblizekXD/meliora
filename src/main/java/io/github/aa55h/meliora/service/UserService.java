@@ -6,6 +6,8 @@ import io.github.aa55h.meliora.repository.UserRepository;
 import io.github.aa55h.meliora.util.AuthenticationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +24,6 @@ public class UserService implements UserDetailsService<User> {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-    }
-
-    @Override
-    public Optional<User> loadUserByUsername(String username) {
-        return userRepository.findByUsername(username);
     }
 
     @Override
@@ -78,5 +75,11 @@ public class UserService implements UserDetailsService<User> {
             throw new AuthenticationException("Invalid refresh token");
         }
         return authenticate(user);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
