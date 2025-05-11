@@ -1,15 +1,19 @@
 package io.github.aa55h.meliora.service;
 
+import io.github.aa55h.meliora.config.KafkaProducerConfiguration;
 import io.github.aa55h.meliora.dto.AuthExchangeCredentials;
 import io.github.aa55h.meliora.model.Playlist;
 import io.github.aa55h.meliora.model.User;
 import io.github.aa55h.meliora.repository.PlaylistRepository;
 import io.github.aa55h.meliora.repository.UserRepository;
 import io.github.aa55h.meliora.util.AuthenticationException;
+import io.github.aa55h.meliora.util.event.ChangeEvent;
+import io.github.aa55h.meliora.util.event.UserChangeEvent;
 import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,12 +28,14 @@ public class UserService implements UserDetailsService<User> {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PlaylistRepository playlistRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PlaylistRepository playlistRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PlaylistRepository playlistRepository, KafkaTemplate<String, Object> kafkaTemplate) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.playlistRepository = playlistRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -64,7 +70,9 @@ public class UserService implements UserDetailsService<User> {
         playlist.setDescription("Your favorite songs");
         playlist.setUser(user);
         user.setFavorites(playlistRepository.save(playlist));
-        return userRepository.save(user);
+        user = userRepository.save(user);
+        kafkaTemplate.send(KafkaProducerConfiguration.USER_CHANGE, user.getId().toString(), new UserChangeEvent(ChangeEvent.Action.CREATE, user));
+        return user;
     }
 
     /**

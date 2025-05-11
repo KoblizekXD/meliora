@@ -1,5 +1,6 @@
 package io.github.aa55h.meliora.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,12 +45,15 @@ public class User implements UserDetails {
     private int tokenVersion = 1;
 
     @OneToOne(orphanRemoval = true)
+    @JsonIgnore
     private Playlist favorites;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true)
+    @JsonIgnore
     private Set<Playlist> playlists = new LinkedHashSet<>();
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return permissions;
     }

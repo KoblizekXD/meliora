@@ -1,9 +1,10 @@
 package io.github.aa55h.meliora.service;
 
+import io.github.aa55h.meliora.config.KafkaProducerConfiguration;
 import io.github.aa55h.meliora.document.UserDocument;
-import io.github.aa55h.meliora.model.User;
 import io.github.aa55h.meliora.repository.UserDocumentRepository;
-import io.github.aa55h.meliora.util.ChangeEvent;
+import io.github.aa55h.meliora.util.event.ChangeEvent;
+import io.github.aa55h.meliora.util.event.UserChangeEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +16,16 @@ public final class SynchronizationService {
         this.userDocumentRepository = userDocumentRepository;
     }
 
-    @KafkaListener
-    public void synchronizeUser(ChangeEvent<User> user) {
-        if (user.action() == ChangeEvent.Action.DELETE) {
-            userDocumentRepository.deleteById(user.entity().getId());
+    @KafkaListener(topics = KafkaProducerConfiguration.USER_CHANGE)
+    public void synchronizeUser(UserChangeEvent user) {
+        if (user.getAction() == ChangeEvent.Action.DELETE) {
+            userDocumentRepository.deleteById(user.getEntity().getId());
         } else {
             var userDocument = new UserDocument(
-                    user.entity().getId(),
-                    user.entity().getUsername(),
-                    user.entity().getEmail(),
-                    user.entity().getProfilePictureUrl()
+                    user.getEntity().getId(),
+                    user.getEntity().getUsername(),
+                    user.getEntity().getEmail(),
+                    user.getEntity().getProfilePictureUrl()
             );
             userDocumentRepository.save(userDocument);
         }
