@@ -16,8 +16,11 @@ import io.github.aa55h.meliora.util.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,10 +39,10 @@ public final class SynchronizationService {
     }
 
     @KafkaListener(topics = KafkaProducerConfiguration.USER_CHANGE)
-    public void synchronizeUser(UserChangeEvent user) {
-        log.info("[User-{}] on user {}", user.getAction(), user.getEntity().getId());
+    public void synchronizeUser(@Header(KafkaHeaders.RECEIVED_KEY) String key, UserChangeEvent user) {
+        log.info("[User-{}] on user {}", user.getAction(), key);
         if (user.getAction() == ChangeEvent.Action.DELETE) {
-            userDocumentRepository.deleteById(user.getEntity().getId());
+            userDocumentRepository.deleteById(UUID.fromString(key));
         } else {
             var userDocument = new UserDocument(
                     user.getEntity().getId(),
@@ -52,10 +55,10 @@ public final class SynchronizationService {
     }
     
     @KafkaListener(topics = KafkaProducerConfiguration.PLAYLIST_CHANGE)
-    public void synchronizePlaylist(PlaylistChangeEvent playlist) {
+    public void synchronizePlaylist(@Header(KafkaHeaders.RECEIVED_KEY) String key, PlaylistChangeEvent playlist) {
         log.info("[Playlist-{}] on playlist {}", playlist.getAction(), playlist.getEntity().getId());
         if (playlist.getAction() == ChangeEvent.Action.DELETE) {
-            userDocumentRepository.deleteById(playlist.getEntity().getId());
+            playlistDocumentRepository.deleteById(UUID.fromString(key));
         } else {
             var playlistDocument = new PlaylistDocument(
                     playlist.getEntity().getId(),
@@ -76,10 +79,10 @@ public final class SynchronizationService {
     }
     
     @KafkaListener(topics = KafkaProducerConfiguration.ALBUM_CHANGE)
-    public void synchronizeAlbum(AlbumChangeEvent album) {
+    public void synchronizeAlbum(@Header(KafkaHeaders.RECEIVED_KEY) String key, AlbumChangeEvent album) {
         log.info("[Album-{}] on album {}", album.getAction(), album.getEntity().getId());
         if (album.getAction() == ChangeEvent.Action.DELETE) {
-            albumDocumentRepository.deleteById(album.getEntity().getId());
+            albumDocumentRepository.deleteById(UUID.fromString(key));
         } else {
             var albumDocument = new AlbumDocument(
                     album.getEntity().getId(),
@@ -99,10 +102,10 @@ public final class SynchronizationService {
     }
     
     @KafkaListener(topics = KafkaProducerConfiguration.SONG_CHANGE)
-    public void synchronizeSong(SongChangeEvent song) {
-        log.info("[Song-{}] on song {}", song.getAction(), song.getEntity().getId());
+    public void synchronizeSong(@Header(KafkaHeaders.RECEIVED_KEY) String key, SongChangeEvent song) {
+        log.info("[Song-{}] on song {}", song.getAction(), key);
         if (song.getAction() == ChangeEvent.Action.DELETE) {
-            songDocumentRepository.deleteById(song.getEntity().getId());
+            songDocumentRepository.deleteById(UUID.fromString(key));
         } else {
             var songDocument = new SongDocument(
                     song.getEntity().getId(),

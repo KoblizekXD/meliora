@@ -48,4 +48,15 @@ public class GlobalExceptionHandlers {
                 }).collect(Collectors.toSet()));
         return ResponseEntity.status(400).body(errorResponse);
     }
+    
+    @ExceptionHandler(UUIDParser.UUIDParseException.class)
+    public ResponseEntity<GenericErrorResponse> handleUUIDParseException(HttpServletRequest request, UUIDParser.UUIDParseException e) {
+        GenericErrorResponse errorResponse = new GenericErrorResponse(
+                e.getMessage(),
+                request.getContextPath(),
+                400,
+                System.currentTimeMillis()
+        );
+        return ResponseEntity.status(400).body(errorResponse);
+    }
 }
