@@ -59,12 +59,50 @@ public class User implements UserDetails {
     }
     
     public enum Permission implements GrantedAuthority {
-        PLAY_MUSIC,
-        UPLOAD_MUSIC,
-        CREATE_ARTISTS,
-        CREATE_ALBUMS,
-        CREATE_PLAYLISTS,
-        CREATE_GENRES,;
+        /**
+         * Permission to play a song.
+         */
+        PLAY_SONG,
+        /**
+         * Permission to download the original .mp3 file of a song.
+         */
+        DOWNLOAD_SONG,
+        /**
+         * Permission to upload/modify/delete contents of a song.
+         */
+        MODIFY_SONG,
+        /**
+         * Permission to upload/modify/delete contents of an album.
+         */
+        MODIFY_ALBUM,
+        /**
+         * Permission to upload/modify/delete contents of an artist.
+         */
+        MODIFY_ARTIST,
+        /**
+         * Permission to upload/modify/delete contents of <b>any</b>(even of others) playlist.
+         */
+        MODIFY_PLAYLIST,
+        /**
+         * Permission to upload/modify/delete contents of <b>only</b> the user's own playlist.
+         */
+        MODIFY_PLAYLIST_SELF,
+        /**
+         * Permission to upload/modify/delete contents of <b>any</b>(even of others) user.
+         */
+        MODIFY_USER,
+        /**
+         * Permission to upload/modify/delete contents of <b>only</b> the user's own profile.
+         */
+        MODIFY_USER_SELF,
+        /**
+         * Permission to access analytics data of songs, albums & application statistics.
+         */
+        VIEW_ANALYTICS,
+        /**
+         * Experimental permission to fetch songs from YouTube Music with yt-dlp.
+         */
+        YTDLP_FETCH;
 
         @Override
         public String getAuthority() {
@@ -72,7 +110,7 @@ public class User implements UserDetails {
         }
         
         public static Set<Permission> getStandardUserPermissions() {
-            return Set.of(PLAY_MUSIC, UPLOAD_MUSIC);
+            return Set.of(PLAY_SONG, DOWNLOAD_SONG, MODIFY_PLAYLIST_SELF, MODIFY_USER_SELF);
         }
         
         public static Set<Permission> getAdminPermissions() {
