@@ -1,6 +1,6 @@
 package io.github.aa55h.meliora.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * A record that holds the credentials for an authentication exchange.
@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
  * @param refreshToken the refresh token
  */
 public record AuthExchangeCredentials(
-        @NotNull String accessToken,
-        @NotNull String refreshToken
+        @NotBlank String accessToken,
+        @NotBlank String refreshToken
 ) {
 }

@@ -1,7 +1,9 @@
 package io.github.aa55h.meliora.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record SigninRequest(
-        String email,
-        String password
+        @NotBlank String email,
+        @NotBlank String password
 ) {
 }
