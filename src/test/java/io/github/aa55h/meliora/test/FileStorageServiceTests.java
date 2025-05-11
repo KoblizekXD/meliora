@@ -37,9 +37,9 @@ class FileStorageServiceTests {
     @DynamicPropertySource
     static void propertySource(DynamicPropertyRegistry registry) {
         minio.start();
-        registry.add("MINIO_URL", minio::getS3URL);
-        registry.add("MINIO_ROOT_USER", minio::getUserName);
-        registry.add("MINIO_ROOT_PASSWORD", minio::getPassword);
+        registry.add("meliora.minio.url", minio::getS3URL);
+        registry.add("meliora.minio.username", minio::getUserName);
+        registry.add("meliora.minio.password", minio::getPassword);
     }
 
     @BeforeEach
