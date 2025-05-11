@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -26,6 +28,15 @@ public class Playlist {
     
     @Column
     private String coverImageUrl;
+
+    @ManyToMany
+    @JoinTable(name = "playlists_songs",
+            joinColumns = @JoinColumn(name = "playlist_id"),
+            inverseJoinColumns = @JoinColumn(name = "songs_id"))
+    private Set<Song> songs = new LinkedHashSet<>();
+
+    @Column(nullable = false)
+    private boolean isPublic = false;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner", nullable = false)
