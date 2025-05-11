@@ -8,6 +8,7 @@ import io.github.aa55h.meliora.repository.PlaylistRepository;
 import io.github.aa55h.meliora.repository.UserRepository;
 import io.github.aa55h.meliora.util.AuthenticationException;
 import io.github.aa55h.meliora.util.event.ChangeEvent;
+import io.github.aa55h.meliora.util.event.PlaylistChangeEvent;
 import io.github.aa55h.meliora.util.event.UserChangeEvent;
 import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
@@ -48,9 +49,6 @@ public class UserService implements UserDetailsService<User> {
      * The user is created with standard user permissions.
      * If a user with the same email already exists, null is returned.
      * A playlist named "Favorites" is created alongside the user - this is automatically attached as a favorites playlist.
-     * @param username
-     * @param email
-     * @param password
      * @return The created user, or null if the user already exists
      */
     @Transactional
@@ -69,11 +67,15 @@ public class UserService implements UserDetailsService<User> {
         playlist.setName("Favorites");
         playlist.setDescription("Your favorite songs");
         playlist.setUser(user);
-        user.setFavorites(playlistRepository.save(playlist));
+        playlist = playlistRepository.save(playlist);
+        kafkaTemplate.send(KafkaProducerConfiguration.PLAYLIST_CHANGE, playlist.getId().toString(), new PlaylistChangeEvent(ChangeEvent.Action.CREATE, playlist));
+        user.setFavorites(playlist);
         user = userRepository.save(user);
         kafkaTemplate.send(KafkaProducerConfiguration.USER_CHANGE, user.getId().toString(), new UserChangeEvent(ChangeEvent.Action.CREATE, user));
         return user;
     }
+    
+    
 
     /**
      * Authenticates a user and generates JWT tokens. No check is performed to verify

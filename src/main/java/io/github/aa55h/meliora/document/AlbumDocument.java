@@ -12,12 +12,12 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.util.Set;
 import java.util.UUID;
 
-@Document(indexName = "playlists")
+@Document(indexName = "albums")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PlaylistDocument {
+public class AlbumDocument {
     @Id
     private UUID id;
     
@@ -27,9 +27,9 @@ public class PlaylistDocument {
     @Field(type = FieldType.Text)
     private String description;
     
-    @Field(type = FieldType.Nested)
-    private Set<SongDocument> songs;
-    
     @Field(type = FieldType.Text)
-    private boolean isPublic;
+    private Set<String> songs;
+
+    @Field(type = FieldType.Text)
+    private Set<String> artists;
 }

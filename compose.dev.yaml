@@ -67,7 +67,7 @@ services:
     image: confluentinc/cp-kafka:latest
     container_name: meliora-kafka
     depends_on:
-      - meliora-zookeeper
+      - zookeeper
     env_file:
       - .env.dev
     ports:

@@ -20,12 +20,31 @@ import java.util.Map;
 public class KafkaProducerConfiguration {
     
     public static final String USER_CHANGE = "user-change";
+    public static final String PLAYLIST_CHANGE = "playlist-change";
+    public static final String ALBUM_CHANGE = "album-change";
+    public static final String SONG_CHANGE = "song-change";
+    
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
     
     @Bean
     public NewTopic userChangeTopic() {
         return new NewTopic(USER_CHANGE, 1, (short) 1);
+    }
+    
+    @Bean
+    public NewTopic playlistChangeTopic() {
+        return new NewTopic(PLAYLIST_CHANGE, 1, (short) 1);
+    }
+    
+    @Bean
+    public NewTopic albumChangeTopic() {
+        return new NewTopic(ALBUM_CHANGE, 1, (short) 1);
+    }
+    
+    @Bean
+    public NewTopic songChangeTopic() {
+        return new NewTopic(SONG_CHANGE, 1, (short) 1);
     }
 
     @Bean

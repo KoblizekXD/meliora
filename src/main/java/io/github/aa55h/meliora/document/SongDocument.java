@@ -9,6 +9,9 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.Set;
+import java.util.UUID;
+
 @Document(indexName = "songs")
 @Getter
 @Setter
@@ -16,11 +19,14 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @NoArgsConstructor
 public class SongDocument {
     @Id
-    private String id;
+    private UUID id;
     
     @Field(type = FieldType.Text)
     private String title;
     
     @Field(type = FieldType.Text)
-    private String artist;
+    private Set<String> artist;
+    
+    @Field(type = FieldType.Text)
+    private Set<String> albums;
 }

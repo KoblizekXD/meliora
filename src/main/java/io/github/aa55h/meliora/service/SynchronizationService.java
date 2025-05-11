@@ -1,22 +1,38 @@
 package io.github.aa55h.meliora.service;
 
 import io.github.aa55h.meliora.config.KafkaProducerConfiguration;
+import io.github.aa55h.meliora.document.AlbumDocument;
+import io.github.aa55h.meliora.document.PlaylistDocument;
+import io.github.aa55h.meliora.document.SongDocument;
 import io.github.aa55h.meliora.document.UserDocument;
+import io.github.aa55h.meliora.model.Album;
+import io.github.aa55h.meliora.model.Artist;
+import io.github.aa55h.meliora.model.Song;
+import io.github.aa55h.meliora.repository.AlbumDocumentRepository;
+import io.github.aa55h.meliora.repository.PlaylistDocumentRepository;
+import io.github.aa55h.meliora.repository.SongDocumentRepository;
 import io.github.aa55h.meliora.repository.UserDocumentRepository;
-import io.github.aa55h.meliora.util.event.ChangeEvent;
-import io.github.aa55h.meliora.util.event.UserChangeEvent;
+import io.github.aa55h.meliora.util.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.stream.Collectors;
+
 @Service
 public final class SynchronizationService {
     private static final Logger log = LoggerFactory.getLogger(SynchronizationService.class);
     private final UserDocumentRepository userDocumentRepository;
+    private final PlaylistDocumentRepository playlistDocumentRepository;
+    private final AlbumDocumentRepository albumDocumentRepository;
+    private final SongDocumentRepository songDocumentRepository;
 
-    public SynchronizationService(UserDocumentRepository userDocumentRepository) {
+    public SynchronizationService(UserDocumentRepository userDocumentRepository, PlaylistDocumentRepository playlistDocumentRepository, AlbumDocumentRepository albumDocumentRepository, SongDocumentRepository songDocumentRepository) {
         this.userDocumentRepository = userDocumentRepository;
+        this.playlistDocumentRepository = playlistDocumentRepository;
+        this.albumDocumentRepository = albumDocumentRepository;
+        this.songDocumentRepository = songDocumentRepository;
     }
 
     @KafkaListener(topics = KafkaProducerConfiguration.USER_CHANGE)
@@ -32,6 +48,75 @@ public final class SynchronizationService {
                     user.getEntity().getProfilePictureUrl()
             );
             userDocumentRepository.save(userDocument);
+        }
+    }
+    
+    @KafkaListener(topics = KafkaProducerConfiguration.PLAYLIST_CHANGE)
+    public void synchronizePlaylist(PlaylistChangeEvent playlist) {
+        log.info("[Playlist-{}] on playlist {}", playlist.getAction(), playlist.getEntity().getId());
+        if (playlist.getAction() == ChangeEvent.Action.DELETE) {
+            userDocumentRepository.deleteById(playlist.getEntity().getId());
+        } else {
+            var playlistDocument = new PlaylistDocument(
+                    playlist.getEntity().getId(),
+                    playlist.getEntity().getName(),
+                    playlist.getEntity().getDescription(),
+                    playlist.getEntity().getSongs()
+                            .stream()
+                            .map(song -> new SongDocument(
+                                    song.getId(),
+                                    song.getTitle(),
+                                    song.getArtists().stream().map(Artist::getName).collect(Collectors.toSet()), 
+                                    song.getAlbums().stream().map(Album::getName).collect(Collectors.toSet())))
+                            .collect(Collectors.toSet()),
+                    playlist.getEntity().isPublic()
+            );
+            playlistDocumentRepository.save(playlistDocument);
+        }
+    }
+    
+    @KafkaListener(topics = KafkaProducerConfiguration.ALBUM_CHANGE)
+    public void synchronizeAlbum(AlbumChangeEvent album) {
+        log.info("[Album-{}] on album {}", album.getAction(), album.getEntity().getId());
+        if (album.getAction() == ChangeEvent.Action.DELETE) {
+            albumDocumentRepository.deleteById(album.getEntity().getId());
+        } else {
+            var albumDocument = new AlbumDocument(
+                    album.getEntity().getId(),
+                    album.getEntity().getName(),
+                    album.getEntity().getDescription(),
+                    album.getEntity().getSongs()
+                            .stream()
+                            .map(Song::getTitle)
+                            .collect(Collectors.toSet()),
+                    album.getEntity().getArtists()
+                            .stream()
+                            .map(Artist::getName)
+                            .collect(Collectors.toSet())
+            );
+            albumDocumentRepository.save(albumDocument);
+        }
+    }
+    
+    @KafkaListener(topics = KafkaProducerConfiguration.SONG_CHANGE)
+    public void synchronizeSong(SongChangeEvent song) {
+        log.info("[Song-{}] on song {}", song.getAction(), song.getEntity().getId());
+        if (song.getAction() == ChangeEvent.Action.DELETE) {
+            songDocumentRepository.deleteById(song.getEntity().getId());
+        } else {
+            var songDocument = new SongDocument(
+                    song.getEntity().getId(),
+                    song.getEntity().getTitle(),
+                    song.getEntity().getArtists()
+                            .stream()
+                            .map(Artist::getName)
+                            .collect(Collectors.toSet()),
+                    song.getEntity().getAlbums()
+                            .stream()
+                            .map(Album::getName)
+                            .collect(Collectors.toSet())
+            );
+            songDocumentRepository.save(songDocument);
         }
     }
 }
