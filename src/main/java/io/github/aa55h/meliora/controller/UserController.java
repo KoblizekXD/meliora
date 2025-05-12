@@ -2,6 +2,7 @@ package io.github.aa55h.meliora.controller;
 
 import io.github.aa55h.meliora.dto.PublicPlaylistData;
 import io.github.aa55h.meliora.dto.PublicUserResponse;
+import io.github.aa55h.meliora.model.Playlist;
 import io.github.aa55h.meliora.model.Song;
 import io.github.aa55h.meliora.model.User;
 import io.github.aa55h.meliora.repository.PlaylistRepository;
@@ -34,6 +35,30 @@ public class UserController {
     @GetMapping("/@me")
     public ResponseEntity<PublicUserResponse> getSelf(Authentication authentication) {
         return new ResponseEntity<>(((User) authentication.getPrincipal()).getPublicUserResponse(), HttpStatus.OK);
+    }
+    
+    @GetMapping("/@me/playlists")
+    public ResponseEntity<Set<UUID>> getSelfPlaylists(Authentication authentication) {
+        return new ResponseEntity<>(
+                ((User) authentication.getPrincipal())
+                        .getPlaylists().stream().map(Playlist::getId).collect(Collectors.toSet()),
+                HttpStatus.OK
+        );
+    }
+    
+    @GetMapping("/@me/playlists/{playlist_id}")
+    public ResponseEntity<PublicPlaylistData> getSelfPlaylist(@PathVariable("playlist_id") String playlistId, 
+                                                               Authentication authentication) {
+        UUID pId = UUIDParser.tryParse(playlistId);
+        return playlistRepository.findByUserIdAndId(((User) authentication.getPrincipal()).getId(), pId)
+                .map(it -> ResponseEntity.ok(new PublicPlaylistData(
+                        it.getId(),
+                        it.getName(),
+                        it.getDescription(),
+                        it.getCoverImageUrl(),
+                        it.getSongs().stream().map(Song::getId).collect(Collectors.toSet()),
+                        it.getUser().getId()
+                ))).orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/{id}")

@@ -5,6 +5,7 @@ import io.github.aa55h.meliora.util.MelioraBucket;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -206,6 +207,13 @@ public class FileStorageService {
             else throw new FileServiceException(e);
         } catch (Exception e) {
             throw new FileServiceException(e);
+        }
+    }
+    
+    @PostConstruct
+    public void postConstruct() {
+        for (MelioraBucket value : MelioraBucket.values()) {
+            ensureBucketExistence(value);
         }
     }
 }

@@ -1,7 +1,10 @@
 package io.github.aa55h.meliora.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.aa55h.meliora.dto.GenericErrorResponse;
 import io.github.aa55h.meliora.filter.JwtSecurityFilter;
 import io.github.aa55h.meliora.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,10 +25,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
     private final UserService userService;
     private final JwtSecurityFilter jwtFilter;
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfiguration(JwtSecurityFilter jwtFilter, UserService userService) {
+    public SecurityConfiguration(JwtSecurityFilter jwtFilter, UserService userService, ObjectMapper objectMapper) {
         this.userService = userService;
         this.jwtFilter = jwtFilter;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -38,6 +43,18 @@ public class SecurityConfiguration {
                     authorizeRequests
                             .requestMatchers("/api/v1/auth/**", "/api/v1/docs", "/api/v1/swagger-ui/**", "/v3/api-docs/**").permitAll()
                             .anyRequest().authenticated();
+                })
+                .exceptionHandling(customizer -> {
+                    customizer.authenticationEntryPoint((request, response, authException) -> {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write(objectMapper.writeValueAsString(new GenericErrorResponse(
+                                "Unauthorized",
+                                request.getContextPath(),
+                                401,
+                                System.currentTimeMillis()
+                        )));
+                    });
                 })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -20,11 +20,11 @@ public class MinioConfiguration {
     @Bean
     public MinioClient minioClient() {
         String url = minioUrl;
-        if (url == null || url.isEmpty()) {
-            minioUrl = "localhost";
+        if (url == null || url.equals("null") || url.isEmpty()) {
+            url = "http://localhost:9000";
         }
         return MinioClient.builder()
-                .endpoint(minioUrl)
+                .endpoint(url)
                 .credentials(minioUsername, minioPassword)
                 .build();
     }
