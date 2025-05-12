@@ -23,6 +23,7 @@ public class KafkaProducerConfiguration {
     public static final String PLAYLIST_CHANGE = "playlist-change";
     public static final String ALBUM_CHANGE = "album-change";
     public static final String SONG_CHANGE = "song-change";
+    public static final String SONG_UPLOAD = "song-upload";
     
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;

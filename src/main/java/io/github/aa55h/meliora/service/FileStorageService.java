@@ -42,6 +42,24 @@ public class FileStorageService {
     }
 
     /**
+     * Inserts a file into the specified bucket.
+     * @param bucket the bucket to upload the file to
+     * @param path the path to the file
+     * @param stream the InputStream of the file to upload
+     */
+    public void insert(MelioraBucket bucket, String path, InputStream stream) {
+        try {
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(bucket.toString())
+                    .object(path)
+                    .stream(stream, stream.available(), -1)
+                    .build());
+        } catch (Exception e) {
+            throw new FileServiceException(e);
+        }
+    }
+
+    /**
      * Gets a file from the specified bucket.
      * @param bucket the bucket to get the file from
      * @param path the path to the file
