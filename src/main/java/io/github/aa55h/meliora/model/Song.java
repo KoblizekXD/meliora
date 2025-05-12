@@ -35,4 +35,7 @@ public class Song {
     
     @ManyToMany(mappedBy = "songs")
     private Set<Artist> artists;
+    
+    @Column(name = "finished_processing", nullable = false)
+    private boolean finishedProcessing = false;
 }
