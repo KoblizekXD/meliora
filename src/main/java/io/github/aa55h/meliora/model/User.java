@@ -50,7 +50,7 @@ public class User implements UserDetails {
     @JsonIgnore
     private Playlist favorites;
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    @OneToMany(mappedBy = "user", orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<Playlist> playlists = new LinkedHashSet<>();
 

@@ -1,5 +1,6 @@
 package io.github.aa55h.meliora.model;
 
+import io.github.aa55h.meliora.dto.PublicPlaylistData;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "playlists")
@@ -56,5 +58,16 @@ public class Playlist {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    }
+    
+    public PublicPlaylistData asPublicPlaylistData() {
+        return new PublicPlaylistData(
+                id,
+                name,
+                description,
+                coverImageUrl,
+                songs.stream().map(Song::getId).collect(Collectors.toSet()),
+                user.getId()
+        );
     }
 }
