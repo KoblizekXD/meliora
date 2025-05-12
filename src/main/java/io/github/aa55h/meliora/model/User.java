@@ -1,6 +1,7 @@
 package io.github.aa55h.meliora.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.aa55h.meliora.dto.PublicUserResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -116,5 +118,11 @@ public class User implements UserDetails {
         public static Set<Permission> getAdminPermissions() {
             return Set.of(Permission.values());
         }
+    }
+    
+    @JsonIgnore
+    public PublicUserResponse getPublicUserResponse() {
+        return new PublicUserResponse(id, username, profilePictureUrl, favorites.isPublic() ? favorites.getId() : null,
+                playlists.stream().filter(Playlist::isPublic).map(Playlist::getId).collect(Collectors.toSet()));
     }
 }

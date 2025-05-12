@@ -3,6 +3,7 @@ package io.github.aa55h.meliora.util;
 import io.github.aa55h.meliora.dto.ConstraintViolationResponse;
 import io.github.aa55h.meliora.dto.GenericErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,6 +47,17 @@ public class GlobalExceptionHandlers {
                     FieldError fe = (FieldError) it;
                     return new ConstraintViolationResponse.Property(fe.getField(), fe.getDefaultMessage());
                 }).collect(Collectors.toSet()));
+        return ResponseEntity.status(400).body(errorResponse);
+    }
+    
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<GenericErrorResponse> handleDataIntegrityViolationException(HttpServletRequest request, DataIntegrityViolationException e) {
+        GenericErrorResponse errorResponse = new GenericErrorResponse(
+                e.getMessage(),
+                request.getContextPath(),
+                400,
+                System.currentTimeMillis()
+        );
         return ResponseEntity.status(400).body(errorResponse);
     }
     

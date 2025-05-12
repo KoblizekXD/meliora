@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService<User> {
@@ -46,18 +47,20 @@ public class UserService implements UserDetailsService<User> {
 
     /**
      * Creates a new user with the given username, email, and password.
-     * The user is created with standard user permissions.
-     * If a user with the same email already exists, null is returned.
-     * A playlist named "Favorites" is created alongside the user - this is automatically attached as a favorites playlist.
+     * You can provide custom permission if you want to.
+     * @param username the username of the user
+     * @param email the email of the user
+     * @param password the unhashed password of the user
+     * @param permissions the permissions of the user
      * @return The created user, or null if the user already exists
      */
     @Transactional
-    public @Nullable User createDefaultUser(String username, String email, String password) {
+    public @Nullable User createUser(String username, String email, String password, Set<User.Permission> permissions) {
         var user = new User();
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setPermissions(User.Permission.getStandardUserPermissions());
+        user.setPermissions(permissions);
         try {
             user = userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
@@ -74,8 +77,18 @@ public class UserService implements UserDetailsService<User> {
         kafkaTemplate.send(KafkaProducerConfiguration.USER_CHANGE, user.getId().toString(), new UserChangeEvent(ChangeEvent.Action.CREATE, user));
         return user;
     }
-    
-    
+
+    /**
+     * Creates a new user with the given username, email, and password.
+     * The user is created with standard user permissions.
+     * If a user with the same email already exists, null is returned.
+     * A playlist named "Favorites" is created alongside the user - this is automatically attached as a favorites playlist.
+     * @return The created user, or null if the user already exists
+     */
+    @Transactional
+    public @Nullable User createDefaultUser(String username, String email, String password) {
+        return createUser(username, email, password, User.Permission.getStandardUserPermissions());
+    }
 
     /**
      * Authenticates a user and generates JWT tokens. No check is performed to verify
