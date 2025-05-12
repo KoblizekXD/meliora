@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,4 +41,14 @@ public class Song {
     
     @Column(name = "finished_processing", nullable = false)
     private boolean finishedProcessing = false;
+
+    @ManyToMany
+    @JoinTable(name = "songs_genres",
+            joinColumns = @JoinColumn(name = "song_id"),
+            inverseJoinColumns = @JoinColumn(name = "genres_id"))
+    private Set<Genre> genres = new LinkedHashSet<>();
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    private Instant uploadedAt;
 }

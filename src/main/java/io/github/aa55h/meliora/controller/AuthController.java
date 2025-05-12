@@ -1,9 +1,6 @@
 package io.github.aa55h.meliora.controller;
 
-import io.github.aa55h.meliora.dto.AuthExchangeCredentials;
-import io.github.aa55h.meliora.dto.GenericErrorResponse;
-import io.github.aa55h.meliora.dto.SigninRequest;
-import io.github.aa55h.meliora.dto.SignupRequest;
+import io.github.aa55h.meliora.dto.*;
 import io.github.aa55h.meliora.model.User;
 import io.github.aa55h.meliora.service.UserService;
 import jakarta.validation.Valid;
@@ -58,5 +55,10 @@ public class AuthController {
         
         String refreshToken = authorization.substring(7);
         return ResponseEntity.ok(userService.refresh(refreshToken));
+    }
+    
+    @PostMapping("/test")
+    public void test(@Valid @RequestBody SongUploadRequest req) {
+        System.out.println(req);
     }
 }
