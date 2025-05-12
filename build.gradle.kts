@@ -29,6 +29,8 @@ dependencies {
     implementation(libs.jjwt.api)
     implementation(libs.jjwt.impl)
     implementation(libs.jjwt.jackson)
+    implementation(libs.springdoc.openapi.starter)
+    implementation("org.springdoc:springdoc-openapi-ui:1.8.0")
     testImplementation(libs.h2)
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

@@ -2,6 +2,7 @@
 minio = "8.5.17"
 jjwt = "0.12.6"
 h2 = "2.3.232"
+spring-doc = "2.8.8"
 
 [libraries]
 minio = { module = "io.minio:minio", version.ref = "minio" }
@@ -9,3 +10,4 @@ jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+springdoc-openapi-starter = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "spring-doc" }
