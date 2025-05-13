@@ -44,7 +44,7 @@ public class TrackController {
                     ));
         }
         Song song = musicService.serverBeginSongProcessing(body, file);
-        return ResponseEntity.ok(new SongResponse(
+        return ResponseEntity.status(201).body(new SongResponse(
                 song.getTitle(),
                 song.getId(),
                 "/api/v1/stream/" + song.getId(),
@@ -53,7 +53,7 @@ public class TrackController {
     }
     
     @PreAuthorize("hasAuthority('DOWNLOAD_SONG')")
-    @PostMapping("/{id}/raw")
+    @GetMapping("/{id}/raw")
     public ResponseEntity<Object> getRawSong(@PathVariable UUID id) {
         Optional<InputStream> rawSongFile = musicService.getRawSongFile(id);
         return rawSongFile.<ResponseEntity<Object>>map(inputStream -> ResponseEntity.ok(new InputStreamResource(inputStream))).orElseGet(() -> new ResponseEntity<>(new GenericErrorResponse(
@@ -64,7 +64,7 @@ public class TrackController {
         ), HttpStatus.NOT_FOUND));
     }
     
-    @PostMapping("/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> getSong(@PathVariable UUID id) {
         Optional<Song> byId = songRepository.findById(id);
         if (byId.isPresent()) {
@@ -79,6 +79,27 @@ public class TrackController {
             return new ResponseEntity<>(new GenericErrorResponse(
                     "Track not found",
                     "/api/v1/tracks/" + id,
+                    404,
+                    System.currentTimeMillis()
+            ), HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    @GetMapping("/{id}/cover")
+    public ResponseEntity<Object> getCoverImage(@PathVariable UUID id) {
+        if (songRepository.existsById(id)) {
+            return musicService.getCover(id).<ResponseEntity<Object>>map(is -> 
+                            ResponseEntity.ok(new InputStreamResource(is)))
+                    .orElse(new ResponseEntity<>(new GenericErrorResponse(
+                            "Cover image not found",
+                            "/api/v1/tracks/" + id + "/cover",
+                            404,
+                            System.currentTimeMillis()
+                    ), HttpStatus.NOT_FOUND));
+        } else {
+            return new ResponseEntity<>(new GenericErrorResponse(
+                    "Track not found",
+                    "/api/v1/tracks/" + id + "/cover",
                     404,
                     System.currentTimeMillis()
             ), HttpStatus.NOT_FOUND);

@@ -126,4 +126,8 @@ public class MusicService {
     public InputStream getPlaylist(UUID song) {
         return fileStorageService.get(MelioraBucket.MUSIC_METADATA, song + "/playlist.m3u8");
     }
+    
+    public Optional<InputStream> getCover(UUID song) {
+        return Optional.ofNullable(fileStorageService.get(MelioraBucket.MUSIC_METADATA, song + "/cover.jpg"));
+    }
 }
