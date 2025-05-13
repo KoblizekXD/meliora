@@ -4,9 +4,9 @@ import io.github.aa55h.meliora.util.MelioraBucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -67,6 +67,51 @@ public class FFMpegService {
         }
     }
     
-    public record M3U8(Path tempDir, InputStream metadata, InputStream... segments) {
+    public long getSongDuration(InputStream audioStream) {
+        try {
+            ProcessBuilder builder = new ProcessBuilder(
+                    "ffprobe",
+                    "-f", "mp3",
+                    "-i", "pipe:0",
+                    "-show_entries", "format=duration",
+                    "-v", "quiet",
+                    "-of", "csv=p=0"
+            );
+
+            Process process = builder.start();
+            OutputStream ffprobeStdin = process.getOutputStream();
+            try {
+                audioStream.transferTo(ffprobeStdin);
+                ffprobeStdin.close();
+            } catch (IOException e) {
+                log.error("Error writing to ffprobe stdin", e);
+                throw new RuntimeException(e);
+            }
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = reader.readLine();
+            process.waitFor();
+
+            if (line != null) {
+                double seconds = Double.parseDouble(line.trim());
+                return Math.round(seconds * 1000);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return -1;
+    }
+    
+    public record M3U8(Path tempDir, InputStream metadata, InputStream... segments)
+        implements Closeable {
+        @Override
+        public void close() throws IOException {
+            metadata.close();
+            for (InputStream segment : segments) {
+                segment.close();
+            }
+            FileSystemUtils.deleteRecursively(tempDir);
+        }
     }
 }

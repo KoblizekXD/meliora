@@ -16,13 +16,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Service responsible for managing music-related operations(uploading, removing, edits etc.).
@@ -68,29 +70,45 @@ public class MusicService {
     public void uploadRawSongFile(UUID song, MultipartFile file) {
         fileStorageService.upload(MelioraBucket.RAW_MUSIC, song.toString() + ".mp3", file);
     }
+
+    private final ConcurrentMap<UUID, CountDownLatch> latches = new ConcurrentHashMap<>();
+
+    @KafkaListener(topics = KafkaProducerConfiguration.SONG_UPLOAD)
+    @Transactional
+    public void processSongDuration(Song song) {
+        CountDownLatch latch = latches.computeIfAbsent(song.getId(), id -> new CountDownLatch(1));
+        try (InputStream raw = fileStorageService.get(MelioraBucket.RAW_MUSIC, song.getId().toString() + ".mp3")) {
+            long duration = fFMpegService.getSongDuration(raw);
+            songRepository.updateDuration(song.getId(), duration);
+            song.setDuration(duration);
+            kafkaTemplate.send(KafkaProducerConfiguration.SONG_CHANGE,
+                    song.getId().toString(), new SongChangeEvent(ChangeEvent.Action.UPDATE, song));
+        } catch (Exception e) {
+            log.error("Error processing song duration", e);
+        } finally {
+            latch.countDown();
+        }
+    }
     
     @KafkaListener(topics = KafkaProducerConfiguration.SONG_UPLOAD)
     @Transactional
     public void processSongUpload(Song song) {
         song.setFinishedProcessing(true);
         Optional<FFMpegService.M3U8> m3u8 = fFMpegService.generateM3U8(song.getId());
+        CountDownLatch latch = latches.computeIfAbsent(song.getId(), id -> new CountDownLatch(1));
         if (m3u8.isPresent()) {
-            try {
-                FFMpegService.M3U8 m3u8Obj = m3u8.get();
+            try (FFMpegService.M3U8 m3u8Obj = m3u8.get()) {
                 for (int i = 0; i < m3u8Obj.segments().length; i++) {
                     fileStorageService.insert(MelioraBucket.MUSIC_SEGMENTS, song.getId() + "/segment_" + i + ".aac", m3u8Obj.segments()[i]);
                 }
                 fileStorageService.insert(MelioraBucket.MUSIC_METADATA, song.getId() + "/playlist.m3u8", m3u8Obj.metadata());
-                m3u8Obj.metadata().close();
-                for (var segment : m3u8Obj.segments()) {
-                    segment.close();
-                }
-                FileSystemUtils.deleteRecursively(m3u8Obj.tempDir());
-                songRepository.save(song);
+                latch.await();
                 kafkaTemplate.send(KafkaProducerConfiguration.SONG_CHANGE,
                         song.getId().toString(), new SongChangeEvent(ChangeEvent.Action.CREATE, song));
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                latches.remove(song.getId());
             }
         } else {
             log.error("Failed to generate M3U8 for song {}", song.getId());
