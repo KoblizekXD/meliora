@@ -9,6 +9,7 @@ public enum MelioraBucket {
     RAW_MUSIC,
     MUSIC_METADATA,
     MUSIC_SEGMENTS,
+    OTHER_METADATA, // For playlists, albums or artists
     TEST_BUCKET;
 
     @Override

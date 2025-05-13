@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -16,5 +18,9 @@ public class Genre {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
+    
+    @ManyToMany(mappedBy = "genres")
+    private Set<Genre> songs = new LinkedHashSet<>();
 }
