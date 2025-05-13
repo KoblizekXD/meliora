@@ -76,7 +76,7 @@ public class MusicService {
     @KafkaListener(topics = KafkaProducerConfiguration.SONG_UPLOAD)
     @Transactional
     public void processSongDuration(Song song) {
-        CountDownLatch latch = latches.computeIfAbsent(song.getId(), id -> new CountDownLatch(1));
+        CountDownLatch latch = latches.computeIfAbsent(song.getId(), _ -> new CountDownLatch(1));
         try (InputStream raw = fileStorageService.get(MelioraBucket.RAW_MUSIC, song.getId().toString() + ".mp3")) {
             long duration = fFMpegService.getSongDuration(raw);
             songRepository.updateDuration(song.getId(), duration);
@@ -115,8 +115,10 @@ public class MusicService {
         }
     }
     
-    public InputStream getRawSongFile(UUID song) {
-        return fileStorageService.get(MelioraBucket.RAW_MUSIC, song.toString() + ".mp3");
+    public Optional<InputStream> getRawSongFile(UUID song) {
+        if (fileStorageService.objectExists(MelioraBucket.RAW_MUSIC, song.toString() + ".mp3"))
+            return Optional.ofNullable(fileStorageService.get(MelioraBucket.RAW_MUSIC, song.toString() + ".mp3"));
+        else return Optional.empty();
     }
     
     public InputStream getSegment(UUID song, int segment) {

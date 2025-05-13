@@ -76,7 +76,7 @@ public class FFMpegService {
                     "-show_entries", "format=duration",
                     "-v", "quiet",
                     "-of", "csv=p=0"
-            );
+            ).redirectError(ProcessBuilder.Redirect.INHERIT).redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
             Process process = builder.start();
             OutputStream ffprobeStdin = process.getOutputStream();
