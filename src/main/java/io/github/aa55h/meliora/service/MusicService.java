@@ -73,7 +73,7 @@ public class MusicService {
 
     private final ConcurrentMap<UUID, CountDownLatch> latches = new ConcurrentHashMap<>();
 
-    @KafkaListener(topics = KafkaProducerConfiguration.SONG_UPLOAD)
+    @KafkaListener(topics = KafkaProducerConfiguration.SONG_UPLOAD, groupId = "side-song-processor")
     @Transactional
     public void processSongDuration(Song song) {
         CountDownLatch latch = latches.computeIfAbsent(song.getId(), _ -> new CountDownLatch(1));
@@ -81,8 +81,6 @@ public class MusicService {
             long duration = fFMpegService.getSongDuration(raw);
             songRepository.updateDuration(song.getId(), duration);
             song.setDuration(duration);
-            kafkaTemplate.send(KafkaProducerConfiguration.SONG_CHANGE,
-                    song.getId().toString(), new SongChangeEvent(ChangeEvent.Action.UPDATE, song));
         } catch (Exception e) {
             log.error("Error processing song duration", e);
         } finally {

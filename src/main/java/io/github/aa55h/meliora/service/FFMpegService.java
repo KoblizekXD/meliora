@@ -1,6 +1,7 @@
 package io.github.aa55h.meliora.service;
 
 import io.github.aa55h.meliora.util.MelioraBucket;
+import io.github.aa55h.meliora.util.TempFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class FFMpegService {
      * @return an M3U8 object containing the metadata and segments as InputStreams
      */
     public Optional<M3U8> generateM3U8(UUID uuid) {
-        try (InputStream raw = fileStorageService.get(MelioraBucket.RAW_MUSIC, uuid.toString())) {
+        try (InputStream raw = fileStorageService.get(MelioraBucket.RAW_MUSIC, uuid + ".mp3")) {
             if (raw == null) return Optional.empty();
             Path tempDir = Files.createTempDirectory("amused-processor-");
             Files.createDirectories(tempDir.resolve("segments"));
@@ -68,29 +69,20 @@ public class FFMpegService {
     }
     
     public long getSongDuration(InputStream audioStream) {
-        try {
+        try (var tempFile = TempFile.create(audioStream)) {
             ProcessBuilder builder = new ProcessBuilder(
                     "ffprobe",
                     "-f", "mp3",
-                    "-i", "pipe:0",
+                    "-i", tempFile.getPath().toString(),
                     "-show_entries", "format=duration",
                     "-v", "quiet",
                     "-of", "csv=p=0"
-            ).redirectError(ProcessBuilder.Redirect.INHERIT).redirectOutput(ProcessBuilder.Redirect.INHERIT);
-
+            );
             Process process = builder.start();
-            OutputStream ffprobeStdin = process.getOutputStream();
-            try {
-                audioStream.transferTo(ffprobeStdin);
-                ffprobeStdin.close();
-            } catch (IOException e) {
-                log.error("Error writing to ffprobe stdin", e);
-                throw new RuntimeException(e);
-            }
+            process.waitFor();
             
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = reader.readLine();
-            process.waitFor();
 
             if (line != null) {
                 double seconds = Double.parseDouble(line.trim());
