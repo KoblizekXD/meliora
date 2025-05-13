@@ -5,6 +5,7 @@ import io.github.aa55h.meliora.dto.GenericErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,6 +64,17 @@ public class GlobalExceptionHandlers {
     
     @ExceptionHandler(UUIDParser.UUIDParseException.class)
     public ResponseEntity<GenericErrorResponse> handleUUIDParseException(HttpServletRequest request, UUIDParser.UUIDParseException e) {
+        GenericErrorResponse errorResponse = new GenericErrorResponse(
+                e.getMessage(),
+                request.getContextPath(),
+                400,
+                System.currentTimeMillis()
+        );
+        return ResponseEntity.status(400).body(errorResponse);
+    }
+    
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<GenericErrorResponse> handleMessageNotReadable(HttpServletRequest request, HttpMessageNotReadableException e) {
         GenericErrorResponse errorResponse = new GenericErrorResponse(
                 e.getMessage(),
                 request.getContextPath(),
