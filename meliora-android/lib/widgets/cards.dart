@@ -44,7 +44,7 @@ class HomePlaylistCard extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            IconButton.filled(
+            IconButton.filledTonal(
               onPressed: onTap,
               icon: const Icon(Icons.play_arrow),
             ),

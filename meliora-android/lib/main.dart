@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meliora_android/presentation/home.dart';
+import 'package:meliora_android/widgets/player.dart';
 
 import 'theme.dart';
 import 'util.dart';
@@ -42,17 +43,20 @@ class _MainPageState extends State<MainPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              
-            },
+            onPressed: () {},
           ),
         ],
       ),
-      body: <Widget>[
-        const HomePage(),
-        const Center(child: Text('Search')),
-        const Center(child: Text('My Library')),
-      ][pageIndex],
+      body: Stack(
+        children: [
+          <Widget>[
+            const HomePage(),
+            const Center(child: Text('Search')),
+            const Center(child: Text('My Library')),
+          ][pageIndex],
+          const Positioned(bottom: 8, left: 8, right: 8, child: MiniPlayer())
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
           onDestinationSelected: (int index) {
             setState(() {

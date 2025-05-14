@@ -12,21 +12,38 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Good morning, User',
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Good morning, aa55h',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-          HomePlaylistCard(imageUrl: "https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg", title: "y", onTap: () {})
-        ],
+            Row(
+              children: [
+                OutlinedButton.icon(onPressed: () {}, label: const Text("Upload"),
+                    icon: const Icon(Icons.upload))
+              ],
+            ),
+            const Text(
+              'Your playlists',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            HomePlaylistCard(
+                imageUrl:
+                    "https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg",
+                title: "Favorites",
+                onTap: () {}),
+          ],
+        ),
       ),
     );
   }
