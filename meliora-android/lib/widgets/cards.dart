@@ -14,10 +14,9 @@ class HomePlaylistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card.outlined(
+    return Card.filled(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
-        side: BorderSide(color: Colors.grey.shade300),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),

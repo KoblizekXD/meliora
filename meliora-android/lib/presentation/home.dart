@@ -26,8 +26,8 @@ class _HomePageState extends State<HomePage> {
             ),
             Row(
               children: [
-                OutlinedButton.icon(onPressed: () {}, label: const Text("Upload"),
-                    icon: const Icon(Icons.upload))
+                FilledButton.tonalIcon(onPressed: () {}, label: const Text("Upload"),
+                    icon: const Icon(Icons.cloud_outlined))
               ],
             ),
             const Text(

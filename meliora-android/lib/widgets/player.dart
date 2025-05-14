@@ -7,19 +7,17 @@ class MiniPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.inversePrimary,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(6),
       ),
       height: 60,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: () {
-              
-            },
-            borderRadius: BorderRadius.circular(4),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Row(
             children: [
               ClipRRect(
@@ -32,7 +30,7 @@ class MiniPlayer extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Column(
+              Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -40,13 +38,13 @@ class MiniPlayer extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant
                     ),
                   ),
                   Text(
                     "Kanye West",
                     style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                      fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant
                     ),
                   ),
                 ],
@@ -65,7 +63,8 @@ class MiniPlayer extends StatelessWidget {
                 onPressed: () {},
               ),
             ],
-          ),),
+                    ),
+          ),
         ),
       )
     );
