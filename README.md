@@ -1,4 +1,7 @@
 <h1 align="center">Meliora</h1>
+<div align="center">
+  <img src="logo.svg" >
+</div>
 <p align="center">Open source streaming service for everyone</p>
 
 ## Contributing/Development
