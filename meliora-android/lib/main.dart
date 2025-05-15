@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meliora_android/presentation/home.dart';
+import 'package:meliora_android/views/auth.dart';
+import 'package:meliora_android/views/home.dart';
 import 'package:meliora_android/widgets/player.dart';
 
 import 'theme.dart';
@@ -15,13 +16,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = View.of(context).platformDispatcher.platformBrightness;
-    TextTheme textTheme = createTextTheme(context, "Roboto", "Poppins");
+    TextTheme textTheme = createTextTheme(context, "Poppins", "Poppins");
 
     MaterialTheme theme = MaterialTheme(textTheme);
     return MaterialApp(
       title: 'Meliora',
       theme: brightness == Brightness.light ? theme.light() : theme.dark(),
-      home: const MainPage(),
+      home: const AuthView(),
     );
   }
 }
