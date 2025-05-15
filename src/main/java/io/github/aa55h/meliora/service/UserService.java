@@ -3,6 +3,7 @@ package io.github.aa55h.meliora.service;
 import io.github.aa55h.meliora.config.KafkaProducerConfiguration;
 import io.github.aa55h.meliora.dto.AuthExchangeCredentials;
 import io.github.aa55h.meliora.model.Playlist;
+import io.github.aa55h.meliora.model.Song;
 import io.github.aa55h.meliora.model.User;
 import io.github.aa55h.meliora.repository.PlaylistRepository;
 import io.github.aa55h.meliora.repository.UserRepository;
@@ -20,8 +21,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserService implements UserDetailsService<User> {
@@ -129,5 +132,37 @@ public class UserService implements UserDetailsService<User> {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Transactional
+    public @Nullable Playlist createPlaylist(User user, @NotNull String name, @Nullable String description, Song... songs) {
+        var playlist = new Playlist();
+        playlist.setName(name);
+        playlist.setDescription(Objects.requireNonNullElse(description, "No description"));
+        playlist.setUser(user);
+        playlist.setSongs(Set.of(songs));
+        playlist = playlistRepository.save(playlist);
+        kafkaTemplate.send(KafkaProducerConfiguration.PLAYLIST_CHANGE, playlist.getId().toString(), new PlaylistChangeEvent(ChangeEvent.Action.CREATE, playlist));
+        user.getPlaylists().add(playlist);
+        user = userRepository.save(user);
+        kafkaTemplate.send(KafkaProducerConfiguration.USER_CHANGE, user.getId().toString(), new UserChangeEvent(ChangeEvent.Action.UPDATE, user));
+        return playlist;
+    }
+    
+    @Transactional
+    public @Nullable Playlist updatePlaylist(User user, @NotNull UUID id, Set<Song> added, Set<Song> removed) {
+        var playlist = playlistRepository.findByUserIdAndId(user.getId(), id)
+                .orElseThrow(() -> new AuthenticationException("Playlist not found"));
+        if (added != null) {
+            playlist.getSongs().addAll(added);
+        }
+        if (removed != null) {
+            playlist.getSongs().removeAll(removed);
+        }
+        playlist = playlistRepository.save(playlist);
+        kafkaTemplate.send(KafkaProducerConfiguration.PLAYLIST_CHANGE, playlist.getId().toString(), new PlaylistChangeEvent(ChangeEvent.Action.UPDATE, playlist));
+        user = userRepository.save(user);
+        kafkaTemplate.send(KafkaProducerConfiguration.USER_CHANGE, user.getId().toString(), new UserChangeEvent(ChangeEvent.Action.UPDATE, user));
+        return playlist;
     }
 }

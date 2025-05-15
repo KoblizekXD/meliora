@@ -38,7 +38,7 @@ public class TrackController {
             return ResponseEntity.badRequest()
                     .body(new GenericErrorResponse(
                             "Invalid file type. Only MP3 files are allowed.",
-                            "/api/v1/music",
+                            "/api/v1/tracks",
                             400,
                             System.currentTimeMillis()
                     ));
