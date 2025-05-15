@@ -15,6 +15,11 @@ import java.lang.annotation.Target;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Custom annotation to validate if an entity with the given ID exists in the specified repository.
+ * This annotation can be used on fields of type UUID or Set<UUID>.
+ * It uses Spring's ApplicationContext to retrieve the repository bean.
+ */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {IdPresentIn.SingleValidator.class, IdPresentIn.MultiValidator.class})
