@@ -22,5 +22,5 @@ public class Genre {
     private String name;
     
     @ManyToMany(mappedBy = "genres")
-    private Set<Genre> songs = new LinkedHashSet<>();
+    private Set<Song> songs = new LinkedHashSet<>();
 }

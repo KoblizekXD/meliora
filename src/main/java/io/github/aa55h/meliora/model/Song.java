@@ -43,9 +43,11 @@ public class Song {
     private boolean finishedProcessing = false;
 
     @ManyToMany
-    @JoinTable(name = "songs_genres",
+    @JoinTable(
+            name = "songs_genres",
             joinColumns = @JoinColumn(name = "song_id"),
-            inverseJoinColumns = @JoinColumn(name = "genres_id"))
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
     private Set<Genre> genres = new LinkedHashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
