@@ -3,13 +3,17 @@ import 'package:get_it/get_it.dart';
 import 'package:meliora_android/views/home.dart';
 import 'package:meliora_android/views/onboarding.dart';
 import 'package:meliora_android/widgets/player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'theme.dart';
 import 'util.dart';
 
 final getIt = GetIt.instance;
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final pref = await SharedPreferences.getInstance();
+  getIt.registerSingleton<SharedPreferences>(pref);
   runApp(const MyApp());
 }
 

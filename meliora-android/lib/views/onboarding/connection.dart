@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:meliora_android/main.dart';
 import 'package:meliora_android/services/meliora_service.dart';
 import 'package:meliora_android/util.dart';
 import 'package:meliora_android/views/onboarding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectionPage extends OnboardingPage {
   const ConnectionPage({super.key});
@@ -34,6 +36,14 @@ class ConnectionPageState extends OnboardingPageState<ConnectionPage> {
         showSnackBar(context, "Could not connect to $url");
       }
       return result;
+    };
+  }
+
+  @override
+  Future<void> Function()? get onSubmit {
+    
+    return () async {
+      getIt.get<SharedPreferences>().setString("meliora_backend_url", _urlController.text);
     };
   }
 
