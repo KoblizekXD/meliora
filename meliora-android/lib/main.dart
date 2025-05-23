@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meliora_android/views/auth.dart';
 import 'package:meliora_android/views/home.dart';
+import 'package:meliora_android/views/onboarding.dart';
 import 'package:meliora_android/widgets/player.dart';
 
 import 'theme.dart';
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Meliora',
       theme: brightness == Brightness.light ? theme.light() : theme.dark(),
-      home: const AuthView(),
+      home: const OnboardingScreen(),
     );
   }
 }
