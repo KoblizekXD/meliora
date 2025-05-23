@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:meliora_android/services/meliora_service.dart';
+import 'package:meliora_android/util.dart';
 import 'package:meliora_android/views/onboarding.dart';
 
 class ConnectionPage extends OnboardingPage {
@@ -25,30 +26,12 @@ class ConnectionPageState extends OnboardingPageState<ConnectionPage> {
     return () async {
       final url = _urlController.text;
       if (url.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Invalid URL"),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showSnackBar(context, "Please enter a valid URL");
         return false;
       }
-      var result = false;
-      try {
-        final response = await http.get(Uri.parse(url).resolve("/api/v1/check"));
-        result = response.statusCode == 200;
-      } catch (e) {
-        result = false;
-      }
-      if (!result) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Invalid URL"),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+      var result = await checkConnection(Uri.parse(url));
+      if (!result && mounted) {
+        showSnackBar(context, "Could not connect to $url");
       }
       return result;
     };
@@ -67,7 +50,12 @@ class ConnectionPageState extends OnboardingPageState<ConnectionPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 64),
+            const Text("Enter the URL of your Meliora backend server. This may be a public URL or a local IP address.",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                )),
+            const SizedBox(height: 8),
             const Text("Server URL",
                 style: TextStyle(
                   fontSize: 16,

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:meliora_android/views/home.dart';
 import 'package:meliora_android/views/onboarding.dart';
 import 'package:meliora_android/widgets/player.dart';
 
 import 'theme.dart';
 import 'util.dart';
+
+final getIt = GetIt.instance;
 
 void main() {
   runApp(const MyApp());

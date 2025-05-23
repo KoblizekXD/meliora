@@ -17,3 +17,14 @@ TextTheme createTextTheme(
   );
   return textTheme;
 }
+
+void showSnackBar(
+    BuildContext context, String message, {Duration? duration}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: duration ?? const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
