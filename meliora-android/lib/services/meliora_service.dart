@@ -9,7 +9,7 @@ class MelioraService {
   
   Future<bool> checkConnection() async {
     try {
-      final uri = Uri.parse(baseUrl).resolve("/api/v1/check");
+      final uri = Uri.parse(baseUrl).resolve("/api/v1/health/check");
       final response = await http.get(uri);
       return response.statusCode == 200;
     } catch (e) {
@@ -23,7 +23,7 @@ class MelioraService {
   }
   
   Future<bool> registrationsEnabled() async {
-    final response = await get("/api/v1/health");
+    final response = await get("/api/v1/health/check");
     return response.statusCode == 200 && json.decode(response.body)["enable_registrations"];
   }
 }
