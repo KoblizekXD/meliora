@@ -1,5 +1,7 @@
 package io.github.aa55h.meliora.controller;
 
+import io.github.aa55h.meliora.dto.FeatureResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,5 +19,13 @@ public class HealthController {
     @GetMapping("/check")
     public ResponseEntity<Void> checkStatus() {
         return ResponseEntity.ok().build();
+    }
+    
+    @Value("${meliora.auth.disable-signup}")
+    private boolean disableSignup;
+    
+    @GetMapping("/features")
+    public ResponseEntity<FeatureResponse> getFeatures() {
+        return ResponseEntity.ok(new FeatureResponse(!disableSignup));
     }
 }
