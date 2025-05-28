@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meliora_mobile/client/api.dart';
+import 'package:meliora_mobile/jwt.dart';
 import 'package:meliora_mobile/main.dart';
 import 'package:meliora_mobile/services/meliora_service.dart';
 import 'package:meliora_mobile/views/onboarding/authenticate.dart';
@@ -16,30 +18,47 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   final sp = getIt.get<SharedPreferences>();
-  late Future<bool> status;
   int _currentPage = 0;
 
   void _completeOnboarding() {
     // Navigator.of(context).pushReplacementNamed('/home');
   }
   
-  void _setAccordinglyPage() async {
+  Future<void> _setAccordinglyPage() async {
     final backendUrl = sp.getString("meliora_backend_url");
     if (backendUrl == null || !(await checkConnection(Uri.parse(backendUrl)))) return;
     _currentPage = 1;
     final accessToken = sp.getString("meliora_access_token");
     final refreshToken = sp.getString("meliora_refresh_token");
-    if (accessToken != null && refreshToken != null) {
-      _currentPage = 2;
+    if (accessToken != null && !isTokenExpired(accessToken)) {
+      _completeOnboarding();
+    } else if (refreshToken != null && !isTokenExpired(refreshToken)) {
+      final temp = ApiClient(
+          basePath: backendUrl,
+          authentication: null
+      );
+      try {
+        final authControllerApi = AuthControllerApi(temp);
+        final response = await authControllerApi.refresh("Bearer $refreshToken");
+        if (response != null) {
+          await sp.setString("meliora_access_token", (response as dynamic).accessToken);
+          await sp.setString("meliora_refresh_token", (response as dynamic).refreshToken);
+          getIt.registerSingleton(ApiClient(basePath: backendUrl, authentication: HttpBearerAuth()..accessToken = response.toString()));
+          _completeOnboarding();
+        } else {
+          _currentPage = 2;
+        }
+      } catch (e) {
+        _currentPage = 2;
+      }
     }
+    _currentPage = 2;
   }
   
   @override
   void initState() {
-    final backendUrl = sp.getString("meliora_backend_url");
-    if (backendUrl != null) {
-      status = checkConnection(Uri.parse(backendUrl));
-    }
+    super.initState();
+    _setAccordinglyPage();
   }
 
   @override
@@ -88,51 +107,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return true;
     }
     
-    return Scaffold(
-      body: FutureBuilder(
-        future: status,
-        builder: (context, asyncSnapshot) {
-          return PageView(
+    return FutureBuilder(
+      future: _setAccordinglyPage(),
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Scaffold(
+          body: PageView(
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(), // Disable swipe
             onPageChanged: (index) => setState(() => _currentPage = index),
             children: pages,
-          );
-        }
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          mainAxisAlignment: _currentPage == 0
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.spaceBetween,
-          children: [
-            if (_currentPage > 0)
-              ElevatedButton(onPressed: () => _pageController.previousPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              ), child: const Text('Back')),
-            ElevatedButton(
-              onPressed: onNextPressed,
-              child: !nextButtonLoading ? Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next') : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
+          ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: _currentPage == 0
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.spaceBetween,
+              children: [
+                if (_currentPage > 0)
+                  ElevatedButton(onPressed: () => _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  ), child: const Text('Back')),
+                ElevatedButton(
+                  onPressed: onNextPressed,
+                  child: !nextButtonLoading ? Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next') : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next'),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next'),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 }
