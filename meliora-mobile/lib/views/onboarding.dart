@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:meliora_mobile/main.dart';
+import 'package:meliora_mobile/services/meliora_service.dart';
 import 'package:meliora_mobile/views/onboarding/authenticate.dart';
 import 'package:meliora_mobile/views/onboarding/connection.dart';
 import 'package:meliora_mobile/views/onboarding/welcome.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -12,10 +15,31 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
+  final sp = getIt.get<SharedPreferences>();
+  late Future<bool> status;
   int _currentPage = 0;
 
   void _completeOnboarding() {
     // Navigator.of(context).pushReplacementNamed('/home');
+  }
+  
+  void _setAccordinglyPage() async {
+    final backendUrl = sp.getString("meliora_backend_url");
+    if (backendUrl == null || !(await checkConnection(Uri.parse(backendUrl)))) return;
+    _currentPage = 1;
+    final accessToken = sp.getString("meliora_access_token");
+    final refreshToken = sp.getString("meliora_refresh_token");
+    if (accessToken != null && refreshToken != null) {
+      _currentPage = 2;
+    }
+  }
+  
+  @override
+  void initState() {
+    final backendUrl = sp.getString("meliora_backend_url");
+    if (backendUrl != null) {
+      status = checkConnection(Uri.parse(backendUrl));
+    }
   }
 
   @override
@@ -65,11 +89,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), // Disable swipe
-        onPageChanged: (index) => setState(() => _currentPage = index),
-        children: pages,
+      body: FutureBuilder(
+        future: status,
+        builder: (context, asyncSnapshot) {
+          return PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(), // Disable swipe
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            children: pages,
+          );
+        }
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -1,3 +1,4 @@
+import org.apache.commons.io.FileUtils
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -101,4 +102,8 @@ tasks.register<GenerateTask>("generateDartClient") {
     inputSpec = specFile.absolutePath
     outputDir = layout.buildDirectory.dir("meliora-client-api").get().asFile.absolutePath
     generatorName = "dart"
+    doLast {
+        FileUtils.copyDirectory(file(outputDir).resolve("lib"), layout.projectDirectory.asFile
+            .resolve("meliora-mobile/lib/client"))
+    }
 }
