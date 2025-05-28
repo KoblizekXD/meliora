@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meliora_mobile/views/onboarding/authenticate.dart';
 import 'package:meliora_mobile/views/onboarding/connection.dart';
 import 'package:meliora_mobile/views/onboarding/welcome.dart';
 
@@ -22,14 +23,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final List<GlobalKey<OnboardingPageState>> keys = [
       GlobalKey<WelcomePageState>(),
       GlobalKey<ConnectionPageState>(),
+      GlobalKey<AuthenticationPageState>()
     ];
 
     final List<OnboardingPage> pages = [
       WelcomePage(key: keys[0]),
       ConnectionPage(key: keys[1]),
+      AuthenticationPage(key: keys[2]),
     ];
     
+    bool nextButtonLoading = false;
+    
     Future<bool> onNextPressed() async {
+      setState(() {
+        nextButtonLoading = true;
+      });
       final currentPageState = keys[_currentPage].currentState;
       if (currentPageState != null && currentPageState.validate != null) {
         final isValid = await currentPageState.validate!();
@@ -39,7 +47,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (currentPageState != null && currentPageState.onSubmit != null) {
         await currentPageState.onSubmit!();
       }
-
+      
+      setState(() {
+        nextButtonLoading = false;
+      });
+      
       if (_currentPage < pages.length - 1) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
@@ -73,7 +85,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ), child: const Text('Back')),
             ElevatedButton(
               onPressed: onNextPressed,
-              child: Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next'),
+              child: !nextButtonLoading ? Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next') : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(_currentPage == pages.length - 1 ? 'Finish' : 'Next'),
+                ],
+              ),
             ),
           ],
         ),

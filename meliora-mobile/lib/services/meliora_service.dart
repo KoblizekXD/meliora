@@ -2,11 +2,15 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:http/http.dart' as http;
+import 'package:meliora_mobile/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MelioraService {
   final String baseUrl;
+  String? accessToken;
+  String? refreshToken;
   
-  MelioraService(this.baseUrl);
+  MelioraService(this.baseUrl, this.accessToken, this.refreshToken);
   
   Future<bool> checkConnection() async {
     try {
@@ -25,7 +29,18 @@ class MelioraService {
   
   Future<bool> registrationsEnabled() async {
     final response = await get("/api/v1/health/check");
-    return response.statusCode == 200 && json.decode(response.body)["enable_registrations"];
+    return response.statusCode == 200 && json.decode(response.body)["enable_registrations"] == true;
+  }
+  
+  MelioraService? fromSharedPreferences() {
+    final prefs = getIt.get<SharedPreferences>();
+    String? baseUrl = prefs.getString("meliora_backend_url");
+    String? accessToken = prefs.getString("meliora_access_token");
+    String? refreshToken = prefs.getString("meliora_refresh_token");
+    if (baseUrl != null && accessToken != null && refreshToken != null) {
+      return MelioraService(baseUrl, accessToken, refreshToken);
+    }
+    return null;
   }
 }
 
