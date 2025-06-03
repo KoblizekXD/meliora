@@ -41,7 +41,6 @@ class ConnectionPageState extends OnboardingPageState<ConnectionPage> {
 
   @override
   Future<void> Function()? get onSubmit {
-    
     return () async {
       getIt.get<SharedPreferences>().setString("meliora_backend_url", _urlController.text);
     };

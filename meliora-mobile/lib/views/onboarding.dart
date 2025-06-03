@@ -3,6 +3,7 @@ import 'package:meliora_mobile/client/api.dart';
 import 'package:meliora_mobile/jwt.dart';
 import 'package:meliora_mobile/main.dart';
 import 'package:meliora_mobile/services/meliora_service.dart';
+import 'package:meliora_mobile/util.dart';
 import 'package:meliora_mobile/views/onboarding/authenticate.dart';
 import 'package:meliora_mobile/views/onboarding/connection.dart';
 import 'package:meliora_mobile/views/onboarding/welcome.dart';
@@ -26,7 +27,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   
   Future<void> _setAccordinglyPage() async {
     final backendUrl = sp.getString("meliora_backend_url");
-    if (backendUrl == null || !(await checkConnection(Uri.parse(backendUrl)))) return;
+    if (backendUrl == null || !(await checkConnection(Uri.parse(backendUrl)))) {
+      if (backendUrl != null) _currentPage = 1;
+      if (mounted && backendUrl != null) {
+        showSnackBar(context,
+            "Failed to connect to Meliora server at $backendUrl. Please check your connection and try again.",
+            duration: const Duration(seconds: 5));
+      }
+      return;
+    }
     _currentPage = 1;
     final accessToken = sp.getString("meliora_access_token");
     final refreshToken = sp.getString("meliora_refresh_token");
@@ -55,10 +64,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _currentPage = 2;
   }
   
+  late Future<void> res;
+  
   @override
   void initState() {
     super.initState();
-    _setAccordinglyPage();
+    res = _setAccordinglyPage();
   }
 
   @override
@@ -108,7 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     
     return FutureBuilder(
-      future: _setAccordinglyPage(),
+      future: res,
       builder: (context, asyncSnapshot) {
         if (asyncSnapshot.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());

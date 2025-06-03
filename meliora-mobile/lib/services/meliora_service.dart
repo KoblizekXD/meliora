@@ -48,7 +48,7 @@ class MelioraService {
 /// Returns true if the server's checking endpoint returns a 200 status code.
 Future<bool> checkConnection(Uri url) async {
   try {
-    final uri = url.resolve("/api/v1/check");
+    final uri = url.resolve("/api/v1/health/check");
     log("Checking connection to $uri");
     final response = await http.get(uri);
     log("Server response: ${response.statusCode} - ${response.body}");
